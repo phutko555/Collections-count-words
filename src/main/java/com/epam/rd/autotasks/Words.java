@@ -1,53 +1,97 @@
 package com.epam.rd.autotasks;
 
+
 import java.util.*;
 
 public class Words {
+    HashMap<String, Integer> list = new HashMap<>();
 
     public String countWords(List<String> lines) {
-        Map<String, Integer> wordCount = new HashMap<>();
+        List<String> words = new ArrayList<>();
+        for (String line:
+                lines) {
 
-
-        for (String line : lines) {
-            String[] words = line.split("\\s+");
-            for (String word : words) {
-                word = word.replaceAll("[^a-zA-Zа-яА-Я]", "").toLowerCase();
-                if (word.length() >= 4) {
-                    if (wordCount.containsKey(word)) {
-                        wordCount.put(word, wordCount.get(word) + 1);
-                    } else {
-                        wordCount.put(word, 1);
-                    }
+            String[] wordList = line.replace('.', ' ')
+                    .replace(',', ' ')
+                    .replace('!', ' ')
+                    .replace('?', ' ')
+                    .replace('"', ' ')
+                    .replace('“', ' ')
+                    .replace('’', ' ')
+                    .replace(':', ' ')
+                    .replace('—', ' ')
+                    .replace('”', ' ')
+                    .replace('(', ' ')
+                    .replace(')', ' ')
+                    .replace(';', ' ')
+                    .replace('‘', ' ')
+                    .replace('-', ' ')
+                    .replace('*', ' ')
+                    .replace('\'', ' ')
+                    .replace('/', ' ')
+                    .split(" ");
+            for (String word:
+                    wordList) {
+                if(word.length() >= 4){
+                    words.add(word.toLowerCase());
                 }
             }
         }
 
-        Iterator<Map.Entry<String, Integer>> iterator = wordCount.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<String, Integer> entry = iterator.next();
-            if (entry.getValue() < 10) {
-                iterator.remove();
+        for (String word: words){
+            if(list.containsKey(word)){
+                list.put(word, list.get(word) + 1);
+            }else{
+                list.put(word, 1);
             }
         }
 
+        for (String word:
+                words) {
+            if(list.containsKey(word) && list.get(word) < 10){
+                list.remove(word);
+            }
+        }
 
-        List<Map.Entry<String, Integer>> sortedWords = new ArrayList<>(wordCount.entrySet());
-        Collections.sort(sortedWords, new Comparator<Map.Entry<String, Integer>>() {
-            @Override
-            public int compare(Map.Entry<String, Integer> a, Map.Entry<String, Integer> b) {
-                int compare = Integer.compare(b.getValue(), a.getValue());
-                if (compare == 0) {
-                    return a.getKey().compareTo(b.getKey());
+        StringBuilder result = new StringBuilder();
+        HashMap<String, Integer> sortedList = sortByValue(list);
+
+
+        for (String word:
+                sortedList.keySet()) {
+            result.append(word);
+            result.append(" - ");
+            result.append(sortedList.get(word));
+            result.append("\n");
+
+        }
+        int last = result.lastIndexOf("\n");
+        result.deleteCharAt(last);
+
+
+        return result.toString();
+    }
+
+    public static HashMap<String, Integer> sortByValue(HashMap<String, Integer> hm){
+        // Create a list from elements of HashMap
+        List<Map.Entry<String, Integer> > list =
+                new LinkedList<>(hm.entrySet());
+
+        Collections.sort(list, new Comparator<Map.Entry<String, Integer> >() {
+            public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
+                int valueComparison = o2.getValue().compareTo(o1.getValue());
+                if (valueComparison == 0) { // If values are equal, compare keys
+                    return o1.getKey().compareTo(o2.getKey());
                 }
-                return compare;
+                return valueComparison;
             }
         });
 
-        StringBuilder result = new StringBuilder();
-        for (Map.Entry<String, Integer> entry : sortedWords) {
-            result.append(entry.getKey()).append(" - ").append(entry.getValue()).append("\n");
+        HashMap<String, Integer> temp = new LinkedHashMap<>();
+        for (Map.Entry<String, Integer> aa : list) {
+            temp.put(aa.getKey(), aa.getValue());
         }
-
-        return result.toString().trim();
+        return temp;
     }
+
 }
